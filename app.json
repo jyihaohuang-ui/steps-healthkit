@@ -10,7 +10,8 @@
       "bundleIdentifier": "com.gpstool.stepshealthkit",
       "infoPlist": {
         "NSHealthShareUsageDescription": "需要讀取您的步數與健康資料",
-        "NSHealthUpdateUsageDescription": "需要將步數寫入 Apple Health"
+        "NSHealthUpdateUsageDescription": "需要將步數寫入 Apple Health",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
@@ -24,6 +25,11 @@
           "isClinicalDataEnabled": false
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a83b5264-dd8e-4db6-b0ca-6a2907e3b28b"
+      }
+    }
   }
 }

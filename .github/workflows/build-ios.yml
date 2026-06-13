@@ -1,0 +1,66 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Expo CLI
+        run: npm install -g @expo/cli
+
+      - name: Prebuild iOS native code
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Find workspace and scheme
+        id: xcode_info
+        run: |
+          WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 1 | head -1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "workspace=$WORKSPACE" >> $GITHUB_OUTPUT
+          echo "scheme=$SCHEME" >> $GITHUB_OUTPUT
+          echo "Workspace: $WORKSPACE"
+          echo "Scheme: $SCHEME"
+
+      - name: Build unsigned archive
+        run: |
+          xcodebuild \
+            -workspace "${{ steps.xcode_info.outputs.workspace }}" \
+            -scheme "${{ steps.xcode_info.outputs.scheme }}" \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            EXPANDED_CODE_SIGN_IDENTITY="" \
+            archive | xcpretty || true
+
+      - name: Package as unsigned IPA
+        run: |
+          APP_PATH=$(find "$RUNNER_TEMP/app.xcarchive/Products/Applications" -name "*.app" | head -1)
+          echo "App path: $APP_PATH"
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -r "$APP_PATH" "$RUNNER_TEMP/Payload/"
+          cd "$RUNNER_TEMP"
+          zip -r "steps-healthkit-unsigned.ipa" Payload/
+          echo "IPA size: $(du -h steps-healthkit-unsigned.ipa | cut -f1)"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: steps-healthkit-unsigned
+          path: ${{ runner.temp }}/steps-healthkit-unsigned.ipa
+          retention-days: 30
