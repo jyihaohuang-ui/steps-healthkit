@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "步數工具",
+    "slug": "steps-healthkit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gpstool.stepshealthkit",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "需要讀取您的步數與健康資料",
+        "NSHealthUpdateUsageDescription": "需要將步數寫入 Apple Health"
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": []
+      }
+    },
+    "plugins": [
+      [
+        "react-native-health",
+        {
+          "isClinicalDataEnabled": false
+        }
+      ]
+    ]
+  }
+}
